@@ -9,10 +9,16 @@
  *
  *}
 <div id="editorDecision">
-<h3>{translate key="submission.editorDecision"}</h3>
+
+{if $isEditor or not($draftingEnabled)}  
+	<h3>{translate key="submission.editorDecision"}</h3>
+	{else}
+	<h3>{translate key="editor.draft.decision"}</h3>
+{/if}
 
 <table id="table1" width="100%" class="data">
-<tr valign="top">
+{if $isEditor or not($draftingEnabled)}
+	<tr valign="top">
 	<td class="label" width="20%">{translate key="editor.article.selectDecision"}</td>
 	<td width="80%" class="value">
 		<form method="post" action="{url op="recordDecision"}">
@@ -24,8 +30,8 @@
 			{if not $allowRecommendation}&nbsp;&nbsp;{translate key="editor.article.cannotRecord"}{/if}
 		</form>
 	</td>
-</tr>
-<tr valign="top">
+	</tr>
+	<tr valign="top">
 	<td class="label">{translate key="editor.article.decision"}</td>
 	<td class="value">
 		{foreach from=$submission->getDecisions($round) item=editorDecision key=decisionKey}
@@ -36,8 +42,8 @@
 			{translate key="common.none"}
 		{/foreach}
 	</td>
-</tr>
-<tr valign="top">
+	</tr>
+	<tr valign="top">
 	<td class="label">{translate key="submission.notifyAuthor"}</td>
 	<td class="value">
 		{url|assign:"notifyAuthorUrl" op="emailEditorDecisionComment" articleId=$submission->getId()}
@@ -59,7 +65,33 @@
 			<a href="javascript:openComments('{url op="viewEditorDecisionComments" path=$submission->getId()}');" class="icon">{icon name="comment"}</a>{translate key="common.noComments"}
 		{/if}
 	</td>
-</tr>
+	</tr>
+{else}
+	<tr valign="top">
+		<td class="label" width="20%">{translate key="editor.draft.selectDecision"}</td>
+		<td width="80%" class="value">
+					{translate key="editor.draft.comment"}
+			<form method="post" action="{url op="draftDecision" path=$submission->getId()}">
+				<select name="decision" size="1" class="selectMenu">
+					{html_options_translate options=$editorDecisionOptions}
+				</select>
+				<input type="submit" name="submit" value="{translate key="editor.draft.record"}" class="button" />
+			</form>
+		</td>
+	</tr>
+{/if}
+
+{if $draftingEnabled}
+	<tr valign="top">
+		<td class="label" width="20%">{translate key="editor.draft.viewCurrent"}</td>
+		<td width="80%" class="value">
+			{foreach from=$drafts item=draft}
+				{assign var="decision" value=$draft.decision}
+				<a href="{url op="viewDraftDecision" path=$draft.article_id key=$draft.key_val}">{translate key=$editorDecisionOptions.$decision} - {$draft.first_name} {$draft.last_name}</a><br />
+			{/foreach}
+		</td>
+	</tr>
+{/if}
 </table>
 
 <form method="post" action="{url op="editorReview"}" enctype="multipart/form-data">
@@ -161,6 +193,17 @@
 			<td width="80%" class="nodata">{translate key="common.none"}</td>
 		</tr>
 	{/foreach}
+	{if $datapaper_feature_enabled}
+		{if $datapaper}
+		<tr valign="top">
+			<td class="label">&nbsp;</td>
+			<td class="value">
+				"{$datapaper.NAME|truncate:50}"
+				<input type="submit" name="submit-datapaper" value="Import any changes" class="button" />
+			</td>
+		</tr>
+		{/if}
+	{/if}
 	<tr valign="top">
 		<td class="label">&nbsp;</td>
 		<td class="value">
@@ -173,4 +216,3 @@
 
 </form>
 </div>
-
